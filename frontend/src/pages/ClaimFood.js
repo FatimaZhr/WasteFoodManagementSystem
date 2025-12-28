@@ -6,10 +6,12 @@ const ClaimFood = () => {
     // 1. Change 'donations' from a static array to State
     const [foodItems, setFoodItems] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState("All");
 
     // 2. Fetch real data from your Food Service (Port 8081)
     useEffect(() => {
-        axios.get('http://localhost:8081/api/food')
+        axios.get('http://localhost:8080/api/bridge/food')
             .then(response => {
                 setFoodItems(response.data);
                 setLoading(false);
@@ -46,6 +48,19 @@ const ClaimFood = () => {
             }
         };
 
+        // Filter the items based on the Search Term
+        const filteredItems = foodItems.filter((item) => {
+          // 1. Check Search Text
+          const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                item.location.toLowerCase().includes(searchTerm.toLowerCase());
+
+          // 2. Check Category (If "All" is selected, everything matches)
+          const matchesCategory = selectedCategory === "All" || item.category === selectedCategory;
+
+          // 3. Return true only if BOTH match
+          return matchesSearch && matchesCategory;
+        });
+
     return (
         <div className="bg-gray-50 min-h-screen pb-20">
             {/* Search Header */}
@@ -55,12 +70,34 @@ const ClaimFood = () => {
                     <div className="flex flex-col md:flex-row gap-4">
                         <div className="relative flex-1">
                             <Search className="absolute left-3 top-3 text-gray-400" size={20} />
-                            <input type="text" placeholder="Search food, locations..." className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none" />
-                        </div>
+<input
+  type="text"
+  placeholder="Search for food (e.g., snacks, vegetables)..."
+  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+
+  // ADD THESE TWO LINES:
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+/>                        </div>
                         <div className="flex gap-2">
-                            <button className="bg-green-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-green-700">All</button>
-                            <button className="bg-white border text-gray-600 px-6 py-2 rounded-xl font-medium hover:bg-gray-50">Vegetables</button>
-                            <button className="bg-white border text-gray-600 px-6 py-2 rounded-xl font-medium hover:bg-gray-50">Bakery</button>
+
+                        <div className="flex gap-2 mb-6">
+                          {["All", "Vegetables", "Bakery", "Cooked Meals"].map((category) => (
+                            <button
+                              key={category}
+                              onClick={() => setSelectedCategory(category)}
+                              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                                selectedCategory === category
+                                  ? "bg-green-600 text-white"       // Active Style (Green)
+                                  : "bg-gray-100 text-gray-600 hover:bg-gray-200" // Inactive Style (Gray)
+                              }`}
+                            >
+                              {category}
+                            </button>
+                          ))}
+                        </div>
+
+
                         </div>
                     </div>
                 </div>
@@ -73,7 +110,7 @@ const ClaimFood = () => {
                 ) : foodItems.length === 0 ? (
                     <p className="text-gray-500 text-center col-span-3">No food available right now.</p>
                 ) : (
-                    foodItems.map((item) => (
+                   filteredItems.map((item)=> (
                         <div key={item.id} className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100 group">
                             <div className="relative h-48 overflow-hidden">
                                 {/* Display the image from Backend */}

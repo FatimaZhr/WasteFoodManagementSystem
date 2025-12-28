@@ -1,0 +1,13 @@
+# Ignore compiled Java code
+target/
+**/target/
+*.class
+*.jar
+
+# Ignore uploads/images
+uploads/
+**/uploads/
+
+# Ignore IDE settings
+.idea/
+*.iml

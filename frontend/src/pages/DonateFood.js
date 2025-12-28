@@ -43,9 +43,9 @@ const DonateFood = () => {
             data.append("image", selectedFile);
         }
 
-        // 2. Send to Food Service (Port 8081)
+        // 2. Send to Food Service (Port 8080)
         try {
-            await axios.post('http://localhost:8081/api/food', data, {
+            await axios.post('http://localhost:8080/api/bridge/food', data, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
